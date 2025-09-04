@@ -160,10 +160,10 @@ $log_entry = [
 
 header('Content-Type: application/json');
 if ($sent) {
-    echo json_encode(['success' => true, 'message' => '✅ Application submitted successfully.']);
+    echo json_encode(['success' => true, 'message' => 'Application successful']);
 } else {
     // Provide a non-sensitive error message to the client; the detailed error is in the log
-    echo json_encode(['success' => false, 'message' => '❌ Error sending application. Check server mail settings.', 'details' => $send_error]);
+    echo json_encode(['success' => false, 'message' => 'Application unsuccessful — please retry', 'details' => $send_error]);
 }
 
 // Cleanup uploaded files after sending/failure

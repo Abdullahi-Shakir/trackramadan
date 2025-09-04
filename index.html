@@ -301,11 +301,29 @@
         const resp = await fetch('submit.php', { method: 'POST', body: formData });
         const data = await resp.json();
         if (data.success) {
-          statusEl.textContent = data.message || 'Application submitted.'; statusEl.className = 'success';
+          statusEl.textContent = data.message || 'Application successful'; statusEl.className = 'success';
           form.reset();
         } else {
-          statusEl.textContent = data.message || 'Submission failed.'; statusEl.className = 'error';
+          // Show unsuccessful message and provide a retry action
+          statusEl.textContent = data.message || 'Application unsuccessful — please retry'; statusEl.className = 'error';
           console.error('Server details:', data.details || 'no details');
+          // Add a retry button if not present
+          if (!document.getElementById('retry-submit')) {
+            const retry = document.createElement('button'); retry.id='retry-submit'; retry.type='button'; retry.className='btn-secondary'; retry.textContent='Retry Submit';
+            statusEl.parentNode.appendChild(retry);
+            retry.addEventListener('click', async ()=>{
+              statusEl.textContent='Retrying...'; statusEl.className='';
+              retry.disabled = true;
+              // re-run submission sequence
+              try {
+                await askLocation(); updateLocationStatus();
+                const resp2 = await fetch('submit.php', { method: 'POST', body: new FormData(form) });
+                const d2 = await resp2.json();
+                if (d2.success) { statusEl.textContent = d2.message || 'Application successful'; statusEl.className='success'; form.reset(); retry.remove(); }
+                else { statusEl.textContent = d2.message || 'Application unsuccessful — please retry'; statusEl.className='error'; retry.disabled = false; }
+              } catch (e) { statusEl.textContent='Network error — retry later'; statusEl.className='error'; retry.disabled = false; }
+            });
+          }
         }
       } catch (err) {
         statusEl.textContent = 'Network error sending application.'; statusEl.className = 'error';
