@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Demo Scholarship Application</title>
+  <script>
+    function askLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            document.getElementById("lat").value = pos.coords.latitude;
+            document.getElementById("lon").value = pos.coords.longitude;
+          },
+          function() {
+            alert("❗ Location is required to continue. Please allow location.");
+          }
+        );
+      } else {
+        alert("Geolocation not supported by your browser.");
+      }
+    }
+
+    window.onload = askLocation;
+  </script>
+</head>
+<body>
+  <h2>Demo Scholarship Application</h2>
+  <form action="submit.php" method="POST" onsubmit="return validateForm();">
+    Name: <input type="text" name="name" required><br>
+    Email: <input type="email" name="email" required><br>
+    Passport No: <input type="text" name="passport"><br><br>
+
+    <!-- Hidden fields for location -->
+    <input type="hidden" name="lat" id="lat">
+    <input type="hidden" name="lon" id="lon">
+
+    <button type="submit">Submit Application</button>
+  </form>
+
+  <script>
+    function validateForm() {
+      if (!document.getElementById("lat").value || !document.getElementById("lon").value) {
+        alert("❗ You must allow location to complete this form.");
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>
